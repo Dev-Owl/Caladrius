@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:caladrius/main.dart';
-import 'package:caladrius/pillowdart/client.dart';
+import 'package:caladrius/core/clientHelper.dart';
 import 'package:meta/meta.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';
@@ -21,10 +21,13 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   void ensureClientIsReady(LoginRequest request) {
-    pillowClient ??= PillowDart(request.serverUrl,
-        username: request.username, password: request.password);
-    if (pillowClient?.serverUrl != request.serverUrl) {
-      pillowClient = PillowDart(request.serverUrl,
+    if (PillowClientHelper.initNeeded()) {
+      PillowClientHelper.initClient(request.serverUrl,
+          username: request.username, password: request.password);
+    }
+    final pillowClient = PillowClientHelper.getClient();
+    if (pillowClient.serverUrl != request.serverUrl) {
+      PillowClientHelper.initClient(request.serverUrl,
           username: request.username, password: request.password);
     }
   }
@@ -33,10 +36,23 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     yield LoginRunning();
 
     try {
+      final prefs = await SharedPreferences.getInstance();
+      if (request.storeAuth) {
+        await prefs.setString('username', request.username);
+        await prefs.setString('password', request.password);
+        await prefs.setString('serverUrl', request.serverUrl);
+        await prefs.setBool('storeAuth', true);
+      } else {
+        await prefs.remove('username');
+        await prefs.remove('password');
+        await prefs.remove('serverUrl');
+        await prefs.remove('storeAuth');
+      }
+      await prefs.setBool('sendbasic', request.addBasicAuth);
       ensureClientIsReady(request);
-      final loginResult =
-          await pillowClient?.authenticate(request.username, request.password);
-      if (loginResult ?? false) {
+      final loginResult = await PillowClientHelper.getClient()
+          .authenticate(request.username, request.password);
+      if (loginResult) {
         yield LoginOk();
       } else {
         yield LoginFailed();

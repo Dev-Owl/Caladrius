@@ -3,9 +3,20 @@ import 'package:flutter/material.dart';
 class CorsHelp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final firstRoute = ModalRoute.of(context)?.isFirst ?? true;
+    List<Widget>? actions = [];
+    if (firstRoute) {
+      actions.add(IconButton(
+          icon: Icon(Icons.login),
+          onPressed: () {
+            Navigator.of(context).pushReplacementNamed('dashboard');
+          }));
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('How to setup CORS'),
+        actions: actions,
       ),
       body: ListView(
         padding: EdgeInsets.all(20),

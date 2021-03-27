@@ -1,31 +1,36 @@
-import 'package:caladrius/pillowdart/client.dart';
+import 'package:caladrius/component/bootstrap.dart';
 import 'package:caladrius/screens/corsHelp.dart';
 import 'package:caladrius/screens/dashboard.dart';
-import 'package:caladrius/screens/login.dart';
+import 'package:caladrius/widget/CaladriusBootstrap.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-PillowDart? pillowClient;
+late SharedPreferences preferences;
 
 void main() {
-  runApp(MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.getInstance().then((instance) {
+    preferences = instance;
+    runApp(MyApp());
+  });
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+  Widget bootstrapRoute(BootCompleted call) => CaladriusBootstrap(call);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Caladrius',
+      initialRoute: 'dashboard',
       routes: {
-        '/dashboard': (context) => Dashboard(),
-        '/cors': (context) => CorsHelp(),
-        '/login': (context) => Login(),
+        'dashboard': (c) => bootstrapRoute(() => Dashboard()),
+        'cors': (context) => CorsHelp(),
       },
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Login(),
     );
   }
 }

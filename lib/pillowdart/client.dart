@@ -1,3 +1,4 @@
+import 'package:caladrius/core/exceptions/authenticationFailed.dart';
 import 'package:caladrius/pillowdart/CouchEndpoints.dart';
 import 'package:caladrius/pillowdart/cookieJar.dart';
 import 'package:http/http.dart' as http;
@@ -16,6 +17,8 @@ class PillowDart {
   String? username;
   String? password;
   CookieJar? cookieJar;
+  bool sendBasicAuth = false;
+
   final http.Client httpClinet = getClient();
 
   bool get authenticated => cookieJar?.cookieStillValid() ?? false;
@@ -31,6 +34,8 @@ class PillowDart {
     await httpClinet.delete(
       CouchEndpoints.combine(serverUrl, CouchEndpoints.session),
     );
+    username = null;
+    password = null;
   }
 
   Future<bool> checkAuthentication() async {
@@ -48,7 +53,7 @@ class PillowDart {
     return false;
   }
 
-  Future<bool> authenticate(String username, String password,
+  Future<bool> authenticate(String? username, String? password,
       {bool autoLogin = true}) async {
     if ((cookieJar?.cookieStillValid() ?? false) &&
         username == this.username &&
@@ -95,7 +100,7 @@ class PillowDart {
   }
 
   Future<List<String>> getAllDbs() async {
-    final authenticated = await authenticate(username ?? '', password ?? '');
+    final authenticated = await authenticate(username, password);
     if (authenticated) {
       final response = await httpClinet.get(
           CouchEndpoints.combine(serverUrl, CouchEndpoints.allDbs),
@@ -104,7 +109,7 @@ class PillowDart {
       checkResponse(response);
       return List.from(jsonDecode(response.body));
     } else {
-      throw Exception('Unable to authenticate against CouchDB');
+      throw AuthenticationFailed('Unable to authenticate against CouchDB');
     }
   }
 
