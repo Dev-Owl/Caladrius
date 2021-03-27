@@ -5,6 +5,9 @@ import 'package:caladrius/widget/CaladriusBootstrap.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+//TODO Rethink auth options for CORS, storing user and password is bad, URL is required session test could be to check if stored cookie is fine
+//
+
 late SharedPreferences preferences;
 
 void main() {
