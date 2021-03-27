@@ -45,7 +45,8 @@ class PillowDart {
     if (authTest.statusCode == 200) {
       final authState = jsonDecode(authTest.body);
       if (authState != null) {
-        if (authState['userCtx']['name'] == username) {
+        if (authState['userCtx']['name'] != null) {
+          username = authState['userCtx']['name'];
           return true;
         }
       }

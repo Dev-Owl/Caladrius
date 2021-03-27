@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:caladrius/core/clientHelper.dart';
 import 'package:meta/meta.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 part 'login_event.dart';
 part 'login_state.dart';
@@ -38,8 +39,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     try {
       final prefs = await SharedPreferences.getInstance();
       if (request.storeAuth) {
-        await prefs.setString('username', request.username);
-        await prefs.setString('password', request.password);
+        if (!kIsWeb) {
+          //Don't store on the web
+          await prefs.setString('username', request.username);
+          await prefs.setString('password', request.password);
+        }
         await prefs.setString('serverUrl', request.serverUrl);
         await prefs.setBool('storeAuth', true);
       } else {

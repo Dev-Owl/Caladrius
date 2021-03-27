@@ -15,7 +15,7 @@ class LoginBootStep extends BootstrapStep {
   }
 
   @override
-  bool stepRequired(SharedPreferences preferences) {
+  Future<bool> stepRequired(SharedPreferences preferences) async {
     String? serverUrl;
     _AuthDetails? details;
     if ((preferences.getBool('storeAuth') ?? false) &&
@@ -23,10 +23,16 @@ class LoginBootStep extends BootstrapStep {
       //2 Ways to go:
       //CORS -> no way to read the cookie as its http only
       //App/NoneCors -> either read the cookie or get login details
-
+      serverUrl = preferences.getString('serverUrl');
       if (kIsWeb) {
         if (document.cookie?.isEmpty ?? true) {
           //We are runnin in CORS mode need to read user and pass
+          if (serverUrl != null) {
+            final client = PillowClientHelper.initClient(serverUrl);
+            if (await client.checkAuthentication()) {
+              return false;
+            }
+          }
           details = _getAuthDetails(preferences);
         } else {
           //TODO implement none CORS mode, read cookie and check if still ok
@@ -34,7 +40,6 @@ class LoginBootStep extends BootstrapStep {
       } else {
         details = _getAuthDetails(preferences);
       }
-      serverUrl = preferences.getString('serverUrl');
       if (serverUrl != null && (details?.present ?? false)) {
         PillowClientHelper.initClient(serverUrl,
             username: details?.user, password: details?.password);

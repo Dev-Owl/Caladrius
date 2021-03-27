@@ -1,9 +1,16 @@
+import 'package:caladrius/core/router.dart';
 import 'package:flutter/material.dart';
 
 class CorsHelp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final firstRoute = ModalRoute.of(context)?.isFirst ?? true;
+    final route = ModalRoute.of(context);
+    final firstRoute = route?.isFirst ?? true;
+    final RoutingData? args = route?.settings.arguments as RoutingData;
+    if (args != null) {
+      print(args.fullRoute);
+    }
+
     List<Widget>? actions = [];
     if (firstRoute) {
       actions.add(IconButton(

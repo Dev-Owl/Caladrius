@@ -1,4 +1,5 @@
 import 'package:caladrius/core/clientHelper.dart';
+import 'package:caladrius/core/exceptions/authenticationFailed.dart';
 import 'package:caladrius/core/exceptions/noClient.dart';
 import 'package:caladrius/component/loginForm.dart';
 import 'package:caladrius/widget/CaladriusBootstrap.dart';
@@ -38,7 +39,8 @@ class _DashboardState extends State<Dashboard> {
           future: getAllDatabases(),
           builder: (c, snapshot) {
             if (snapshot.hasError) {
-              if (snapshot.error is NoClientException) {
+              if (snapshot.error is NoClientException ||
+                  snapshot.error is AuthenticationFailed) {
                 return LoginForm();
               } else {
                 return Text(

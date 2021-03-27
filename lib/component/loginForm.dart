@@ -152,9 +152,9 @@ class _LoginFormState extends State<LoginForm> {
                       },
                     ),
                     SwitchListTile(
-                        title: Text('Store user and password'),
+                        title: Text('Save authentication'),
                         subtitle: Text(
-                            'Either stores your user and password or checks the authentication cookie (if not in CORS mode)'),
+                            'Either stores your user and password or checks the authentication cookie'),
                         value: storeAuthDataInClient,
                         onChanged: (newValue) {
                           setState(() {

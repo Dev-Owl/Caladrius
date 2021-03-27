@@ -32,17 +32,34 @@ class _BootStrapState extends State<BootStrap> implements BootstrapController {
 
   @override
   Widget build(BuildContext context) {
-    while (
-        bootRunning && !widget.steps[currentIndex].stepRequired(preferences)) {
+    return StreamBuilder<Widget>(
+        stream: work(),
+        builder: (c, snap) {
+          if (snap.hasData) {
+            return snap.data!;
+          }
+          return Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        });
+  }
+
+  Stream<Widget> work() async* {
+    while (bootRunning &&
+        !(await widget.steps[currentIndex].stepRequired(preferences))) {
       if (currentIndex + 1 < widget.steps.length) {
         currentIndex++;
       } else {
         bootRunning = false;
       }
     }
-    if (bootRunning) return widget.steps[currentIndex].buildStep(this);
-
-    return widget.bootCompleted();
+    if (bootRunning) {
+      yield widget.steps[currentIndex].buildStep(this);
+    } else {
+      yield widget.bootCompleted();
+    }
   }
 
   @override
@@ -74,7 +91,7 @@ class _BootStrapState extends State<BootStrap> implements BootstrapController {
 
 abstract class BootstrapStep {
   const BootstrapStep();
-  bool stepRequired(SharedPreferences prefs);
+  Future<bool> stepRequired(SharedPreferences prefs);
   Widget buildStep(BootstrapController controller);
 }
 
