@@ -19,19 +19,19 @@ class PillowDart {
   CookieJar? cookieJar;
   bool sendBasicAuth = false;
 
-  final http.Client httpClinet = getClient();
+  final http.Client httpClient = getClient();
 
   bool get authenticated => cookieJar?.cookieStillValid() ?? false;
 
   PillowDart(this.serverUrl, {this.username, this.password});
 
   Future removeSessionIfExists() async {
-    /* if (httpClinet is BrowserClient) {
+    /* if (httpClient is BrowserClient) {
       //Running in the web -> checking cookie not so easy as its http
       //No luck from JS in this case
-      (httpClinet as BrowserClient).withCredentials = true;
+      (httpClient as BrowserClient).withCredentials = true;
     }*/
-    await httpClinet.delete(
+    await httpClient.delete(
       CouchEndpoints.combine(serverUrl, CouchEndpoints.session),
     );
     username = null;
@@ -39,7 +39,7 @@ class PillowDart {
   }
 
   Future<bool> checkAuthentication() async {
-    final authTest = await httpClinet.get(
+    final authTest = await httpClient.get(
       CouchEndpoints.combine(serverUrl, CouchEndpoints.session),
     );
     if (authTest.statusCode == 200) {
@@ -67,7 +67,7 @@ class PillowDart {
       await removeSessionIfExists();
     }
 
-    final response = await httpClinet.post(
+    final response = await httpClient.post(
       CouchEndpoints.combine(serverUrl, CouchEndpoints.session),
       body: {
         'name': username,
@@ -103,7 +103,7 @@ class PillowDart {
   Future<List<String>> getAllDbs() async {
     final authenticated = await authenticate(username, password);
     if (authenticated) {
-      final response = await httpClinet.get(
+      final response = await httpClient.get(
           CouchEndpoints.combine(serverUrl, CouchEndpoints.allDbs),
           headers: cookieJar?.header);
 
@@ -114,8 +114,9 @@ class PillowDart {
     }
   }
 
-  Future<http.Response> getRequest(String endpoint,
+  Future<http.Response> request(String endpoint, HttpMethod method,
       {Map<String, String>? queryParameter,
+      dynamic body,
       Map<String, String>? header}) async {
     final authenticated = await authenticate(username, password);
     if (authenticated) {
@@ -131,8 +132,18 @@ class PillowDart {
       if (cookieHeader != null) {
         headerForRequest.addAll(cookieHeader);
       }
-
-      return httpClinet.get(uri, headers: headerForRequest);
+      switch (method) {
+        case HttpMethod.GET:
+          return httpClient.get(uri, headers: headerForRequest);
+        case HttpMethod.POST:
+          return httpClient.post(uri, body: body, headers: headerForRequest);
+        case HttpMethod.PUT:
+          return httpClient.put(uri, body: body, headers: headerForRequest);
+        case HttpMethod.DELETE:
+          return httpClient.delete(uri, body: body, headers: headerForRequest);
+        case HttpMethod.HEAD:
+          return httpClient.head(uri, headers: headerForRequest);
+      }
     } else {
       throw AuthenticationFailed('Unable to authenticate against CouchDB');
     }
@@ -146,3 +157,5 @@ class PillowDart {
     }
   }
 }
+
+enum HttpMethod { GET, POST, PUT, DELETE, HEAD }

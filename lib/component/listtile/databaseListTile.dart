@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:caladrius/core/clientHelper.dart';
 import 'package:caladrius/core/exceptions/couchError.dart';
 import 'package:caladrius/core/filesize.dart';
+import 'package:caladrius/pillowdart/client.dart';
 import 'package:caladrius/pillowdart/couchModels/databaseInfo.dart';
 import 'package:flutter/material.dart';
 
@@ -21,7 +22,8 @@ class _DatabaseListTileState extends State<DatabaseListTile> {
   Future<Widget> loadDatabaseInformation() async {
     try {
       final client = PillowClientHelper.getClient();
-      final response = await client.getRequest(widget.databaseName);
+      final response =
+          await client.request(widget.databaseName, HttpMethod.GET);
       if (response.statusCode == 200) {
         info = DatabaseInfo.fromJson(jsonDecode(response.body));
         if (info != null) {
