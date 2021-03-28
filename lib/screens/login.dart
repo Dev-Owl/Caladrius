@@ -1,5 +1,5 @@
-import 'package:caladrius/component/bootstrap.dart';
-import 'package:caladrius/component/loginForm.dart';
+import 'package:caladrius/component/bootstrap/bootstrap.dart';
+import 'package:caladrius/component/widget/loginForm.dart';
 import 'package:flutter/material.dart';
 
 class Login extends StatelessWidget {

@@ -1,7 +1,7 @@
-import 'package:caladrius/component/bootstrap.dart';
+import 'package:caladrius/component/bootstrap/bootstrap.dart';
 import 'package:caladrius/screens/corsHelp.dart';
 import 'package:caladrius/screens/dashboard.dart';
-import 'package:caladrius/widget/CaladriusBootstrap.dart';
+import 'package:caladrius/component/bootstrap/CaladriusBootstrap.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter {

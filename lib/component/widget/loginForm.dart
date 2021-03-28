@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:caladrius/bloc/login_bloc.dart';
-import 'package:caladrius/component/bootstrap.dart';
+import 'package:caladrius/component/bootstrap/bootstrap.dart';
 import 'package:caladrius/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

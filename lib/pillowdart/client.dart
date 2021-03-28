@@ -8,7 +8,7 @@ import 'pillowHttp/pillowHttp_stub.dart'
     if (dart.library.io) 'pillowHttp/pillowHttp_app.dart'
     if (dart.library.html) 'pillowHttp/pillowHttp_web.dart';
 
-//TODO Add flag to include on all request basic auth
+//TODO support basic auth on all requests
 
 class PillowDart {
   String serverUrl;
@@ -109,6 +109,30 @@ class PillowDart {
 
       checkResponse(response);
       return List.from(jsonDecode(response.body));
+    } else {
+      throw AuthenticationFailed('Unable to authenticate against CouchDB');
+    }
+  }
+
+  Future<http.Response> getRequest(String endpoint,
+      {Map<String, String>? queryParameter,
+      Map<String, String>? header}) async {
+    final authenticated = await authenticate(username, password);
+    if (authenticated) {
+      final uri = CouchEndpoints.combine(serverUrl, endpoint);
+      if (queryParameter != null) {
+        uri.queryParameters.addAll(queryParameter);
+      }
+      final headerForRequest = <String, String>{};
+      if (header != null) {
+        headerForRequest.addAll(header);
+      }
+      final cookieHeader = cookieJar?.header;
+      if (cookieHeader != null) {
+        headerForRequest.addAll(cookieHeader);
+      }
+
+      return httpClinet.get(uri, headers: headerForRequest);
     } else {
       throw AuthenticationFailed('Unable to authenticate against CouchDB');
     }

@@ -1,5 +1,5 @@
-import 'package:caladrius/component/bootSteps/LoginBootStep.dart';
-import 'package:caladrius/component/bootstrap.dart';
+import 'package:caladrius/component/bootstrap/bootSteps/LoginBootStep.dart';
+import 'package:caladrius/component/bootstrap/bootstrap.dart';
 import 'package:flutter/material.dart';
 
 class CaladriusBootstrap extends StatelessWidget {

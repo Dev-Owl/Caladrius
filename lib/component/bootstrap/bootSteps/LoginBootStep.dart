@@ -1,4 +1,4 @@
-import 'package:caladrius/component/bootstrap.dart';
+import 'package:caladrius/component/bootstrap/bootstrap.dart';
 import 'package:caladrius/core/clientHelper.dart';
 import 'package:caladrius/screens/login.dart';
 import 'package:flutter/src/widgets/framework.dart';
