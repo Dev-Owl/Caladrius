@@ -19,7 +19,7 @@ class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   var lastUserName = 'admin';
   var lastPassword = '';
-  var urlToCouchDb = 'http://localhost:5984';
+  var urlToCouchDb = '';
   var sendAsBasicAuth = false;
   var storeAuthDataInClient = false;
 
@@ -30,6 +30,8 @@ class _LoginFormState extends State<LoginForm> {
     sendAsBasicAuth = preferences.getBool('sendbasic') ?? false;
     lastUserName = preferences.getString('username') ?? 'admin';
     lastPassword = preferences.getString('password') ?? '';
+    urlToCouchDb =
+        preferences.getString('serverUrl') ?? 'http://localhost:5984';
   }
 
   @override

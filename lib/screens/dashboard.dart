@@ -14,8 +14,15 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  List<String>? totalDbs;
+  bool reuseList = false;
+  final TextEditingController searchController = TextEditingController();
+
   Future<List<String>> getAllDatabases() {
     try {
+      if (reuseList) {
+        Future.value(totalDbs);
+      }
       return PillowClientHelper.getClient().getAllDbs();
     } catch (e) {
       return Future.error(e);
@@ -44,6 +51,7 @@ class _DashboardState extends State<Dashboard> {
         body: FutureBuilder<List<String>>(
           future: getAllDatabases(),
           builder: (c, snapshot) {
+            totalDbs = null;
             if (snapshot.connectionState != ConnectionState.done) {
               return Center(
                 child: CircularProgressIndicator(),
@@ -58,12 +66,65 @@ class _DashboardState extends State<Dashboard> {
                     'Something went wrong: ${snapshot.error?.toString()}');
               }
             }
+            reuseList = false;
             snapshot.data?.sort();
-            return ListView.builder(
-              itemCount: snapshot.data?.length ?? 0,
-              itemBuilder: (_, index) {
-                return DatabaseListTile(snapshot.data![index]);
-              },
+            totalDbs = snapshot.data;
+            var viewData = totalDbs;
+            if (viewData != null && searchController.text.isNotEmpty) {
+              viewData = viewData
+                  .where((element) =>
+                      element.toLowerCase().contains(searchController.text))
+                  .toList();
+            }
+
+            return Column(
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Padding(
+                        padding: EdgeInsets.all(10),
+                        child: TextField(
+                          controller: searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Search for a db',
+                            suffixIcon: searchController.text.isNotEmpty
+                                ? IconButton(
+                                    onPressed: () {
+                                      searchController.clear();
+                                      setState(() {
+                                        reuseList = true;
+                                      });
+                                    },
+                                    icon: Icon(Icons.clear),
+                                  )
+                                : null,
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: Colors.blueAccent, width: 32.0),
+                                borderRadius: BorderRadius.circular(25.0)),
+                          ),
+                          onSubmitted: (term) {
+                            setState(() {
+                              reuseList = true;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: viewData?.length ?? 0,
+                    itemBuilder: (_, index) {
+                      return DatabaseListTile(viewData![index]);
+                    },
+                  ),
+                )
+              ],
             );
           },
         ),
@@ -72,7 +133,6 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Future showDatabaseAddDialog() async {
-    //TODO move this into its own widget, return the new created db name if any
     final result = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
@@ -83,7 +143,9 @@ class _DashboardState extends State<Dashboard> {
 
     if (result != null) {
       //Db created
-      setState(() {});
+      setState(() {
+        reuseList = false;
+      });
     }
   }
 }

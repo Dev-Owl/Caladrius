@@ -27,12 +27,45 @@ class _DatabaseListTileState extends State<DatabaseListTile> {
       if (response.statusCode == 200) {
         info = DatabaseInfo.fromJson(jsonDecode(response.body));
         if (info != null) {
+          final deletionColor =
+              (info?.deletedDocsCount ?? 0) > (info?.totlaDocsCount ?? 0)
+                  ? Colors.red
+                  : Colors.black;
           return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text('Total docs: ${info?.totlaDocsCount}'),
-              Text('Deleted docs: ${info?.deletedDocsCount}'),
-              Text('File size: ${filesize(info?.size.file)}'),
+              Chip(
+                label: Row(
+                  children: [
+                    Icon(Icons.note_add),
+                    Text('${info?.totlaDocsCount}'),
+                  ],
+                ),
+              ),
+              Chip(
+                label: Row(
+                  children: [
+                    Icon(
+                      Icons.delete_forever,
+                      color: deletionColor,
+                    ),
+                    Text(
+                      '${info?.deletedDocsCount}',
+                      style: TextStyle(
+                        color: deletionColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Chip(
+                label: Row(
+                  children: [
+                    Icon(Icons.storage),
+                    Text('${filesize(info?.size.file)}'),
+                  ],
+                ),
+              ),
             ],
           );
         }
