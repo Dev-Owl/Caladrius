@@ -6,5 +6,5 @@ class CookieJar {
 
   bool cookieStillValid() => ttl.isAfter(DateTime.now());
 
-  Map<String, String> get header => {'Cookie': cookie};
+  Map<String, String> get header => {'Cookie': cookie.split(';').first};
 }

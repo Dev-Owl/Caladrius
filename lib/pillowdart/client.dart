@@ -3,6 +3,7 @@ import 'package:caladrius/pillowdart/CouchEndpoints.dart';
 import 'package:caladrius/pillowdart/cookieJar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'pillowHttp/pillowHttp_stub.dart'
     if (dart.library.io) 'pillowHttp/pillowHttp_app.dart'
@@ -18,6 +19,8 @@ class PillowDart {
   String? password;
   CookieJar? cookieJar;
   bool sendBasicAuth = false;
+  int ensureSessionsEveryXMinutes = 5;
+  DateTime? lastSessionRequest;
 
   final http.Client httpClient = getClient();
 
@@ -39,18 +42,27 @@ class PillowDart {
   }
 
   Future<bool> checkAuthentication() async {
+    //If in web do session test only every x minutes, saves requests
+    if (kIsWeb &&
+        lastSessionRequest != null &&
+        lastSessionRequest!.difference(DateTime.now()).inMinutes <
+            ensureSessionsEveryXMinutes) return true;
+
     final authTest = await httpClient.get(
       CouchEndpoints.combine(serverUrl, CouchEndpoints.session),
     );
+
     if (authTest.statusCode == 200) {
       final authState = jsonDecode(authTest.body);
       if (authState != null) {
         if (authState['userCtx']['name'] != null) {
+          lastSessionRequest = DateTime.now();
           username = authState['userCtx']['name'];
           return true;
         }
       }
     }
+    lastSessionRequest = null;
     return false;
   }
 
@@ -84,10 +96,10 @@ class PillowDart {
     }
 
     if (response.statusCode == 200) {
-      if (response.headers.containsKey('Set-Cookie') &&
-          response.headers['Set-Cookie'] != null) {
+      if (response.headers.containsKey('set-cookie') &&
+          response.headers['set-cookie'] != null) {
         cookieJar = CookieJar(
-          response.headers['Set-Cookie'] ?? '',
+          response.headers['set-cookie'] ?? '',
           DateTime.now().add(
             Duration(
               minutes: 9,
