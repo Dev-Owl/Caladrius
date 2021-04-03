@@ -9,8 +9,10 @@ import 'package:flutter/material.dart';
 
 class DatabaseListTile extends StatefulWidget {
   final String databaseName;
+  final VoidCallback? onTap;
 
-  const DatabaseListTile(this.databaseName, {Key? key}) : super(key: key);
+  const DatabaseListTile(this.databaseName, {Key? key, this.onTap})
+      : super(key: key);
 
   @override
   _DatabaseListTileState createState() => _DatabaseListTileState();
@@ -94,6 +96,7 @@ class _DatabaseListTileState extends State<DatabaseListTile> {
         },
         future: loadDatabaseInformation(),
       ),
+      onTap: widget.onTap,
     );
   }
 }

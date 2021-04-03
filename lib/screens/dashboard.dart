@@ -120,7 +120,13 @@ class _DashboardState extends State<Dashboard> {
                   child: ListView.builder(
                     itemCount: viewData?.length ?? 0,
                     itemBuilder: (_, index) {
-                      return DatabaseListTile(viewData![index]);
+                      return DatabaseListTile(
+                        viewData![index],
+                        onTap: () {
+                          Navigator.of(context)
+                              .pushNamed('database/${viewData![index]}');
+                        },
+                      );
                     },
                   ),
                 )

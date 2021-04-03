@@ -2,6 +2,7 @@ import 'package:caladrius/component/bootstrap/bootstrap.dart';
 import 'package:caladrius/screens/corsHelp.dart';
 import 'package:caladrius/screens/dashboard.dart';
 import 'package:caladrius/component/bootstrap/CaladriusBootstrap.dart';
+import 'package:caladrius/screens/database.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter {
@@ -36,12 +37,25 @@ class AppRouter {
         {
           return pageRoute(CorsHelp(), data);
         }
+      case 'database':
+        {
+          //If the database part is missing -> Dashboard
+          if (data.route.length == 1) {
+            return _default(data);
+          } else {
+            return bootstrapRoute(() => DatabaseView(), data);
+          }
+        }
       default:
         {
           //Fallback to the dashboard/login
-          return bootstrapRoute(() => Dashboard(), data);
+          return _default(data);
         }
     }
+  }
+
+  static PageRoute _default(RoutingData data) {
+    return bootstrapRoute(() => Dashboard(), data);
   }
 }
 
