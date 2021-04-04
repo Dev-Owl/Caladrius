@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:caladrius/component/widget/databaseMenu.dart';
 import 'package:caladrius/component/widget/documentList.dart';
+import 'package:caladrius/core/clientHelper.dart';
+import 'package:caladrius/core/dataPackage.dart';
 import 'package:caladrius/core/router.dart';
+import 'package:caladrius/pillowdart/client.dart';
 import 'package:flutter/material.dart';
 import 'package:caladrius/core/helper.dart';
 
@@ -87,8 +92,28 @@ class _DatabaseViewState extends State<DatabaseView> {
   }
 
   Widget buildBody() {
-    return DocumentList(
-      title: getTitle(),
+    if (selectedMenu == 1) {
+      return DocumentList(
+        (int offset) async {
+          try {
+            final client = PillowClientHelper.getClient();
+            var response = await client.request(
+                '$getCurrentDataBaseName/_all_docs', HttpMethod.GET);
+            final data = jsonDecode(response.body);
+            return DataPackage(
+              data['total_rows'],
+              offset,
+              List<Map<String, dynamic>>.from(data['rows']),
+            );
+          } catch (e) {
+            return Future.error(e);
+          }
+        },
+        title: getTitle(),
+      );
+    }
+    return Container(
+      child: Text('Lazy'),
     );
   }
 

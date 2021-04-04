@@ -1,15 +1,40 @@
+import 'dart:math';
+
+import 'package:caladrius/core/dataPackage.dart';
 import 'package:flutter/material.dart';
 import 'package:caladrius/core/helper.dart';
 
+typedef GetDataCallback = Future<DataPackage> Function(int offset);
+
 class DocumentList extends StatefulWidget {
   final String title;
+  final GetDataCallback getDataCallback;
 
-  const DocumentList({Key? key, this.title = 'Lazy dev'}) : super(key: key);
+  const DocumentList(
+    this.getDataCallback, {
+    Key? key,
+    this.title = 'Lazy dev',
+  }) : super(key: key);
   @override
   _DocumentListState createState() => _DocumentListState();
 }
 
 class _DocumentListState extends State<DocumentList> {
+  /*
+      Load data function
+      Sort data 
+  */
+
+  late Future<DataPackage> loadDataFuture;
+  late DataPackage lastLoadedPackage;
+  int rowsPerPage = 10;
+
+  @override
+  void initState() {
+    super.initState();
+    loadDataFuture = widget.getDataCallback(0);
+  }
+
   @override
   Widget build(BuildContext context) {
     final mobileMode = widget.renderMobileMode(context);
@@ -20,64 +45,110 @@ class _DocumentListState extends State<DocumentList> {
               title: Text(widget.title),
               automaticallyImplyLeading: false,
             ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: ConstrainedBox(
-              constraints: BoxConstraints.expand(width: constraints.maxWidth),
-              child: DataTable(
-                sortAscending: true,
-                sortColumnIndex: 0,
-                columns: <DataColumn>[
-                  DataColumn(
-                    label: Text(
-                      'Name',
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                    onSort: (i, d) {},
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Age',
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Role',
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ),
-                ],
-                rows: const <DataRow>[
-                  DataRow(
-                    cells: <DataCell>[
-                      DataCell(Text('Sarah')),
-                      DataCell(Text('19')),
-                      DataCell(Text('Student')),
-                    ],
-                  ),
-                  DataRow(
-                    cells: <DataCell>[
-                      DataCell(Text('Janine')),
-                      DataCell(Text('43')),
-                      DataCell(Text('Professor')),
-                    ],
-                  ),
-                  DataRow(
-                    cells: <DataCell>[
-                      DataCell(Text('William')),
-                      DataCell(Text('27')),
-                      DataCell(Text('Associate Professor')),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+      body: buildContent(context),
+    );
+  }
+
+  Widget buildContent(BuildContext context) {
+    return FutureBuilder<DataPackage>(
+      builder: (fContext, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.data != null) {
+            lastLoadedPackage = snapshot.data!;
+            return buildTable();
+          } else {
+            return errorChild('Got empty response, that should not happen');
+          }
+        } else {
+          if (snapshot.hasError) {
+            return errorChild(snapshot.error);
+          } else {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        }
+      },
+      future: loadDataFuture,
+    );
+  }
+
+  Widget errorChild(Object? error) {
+    return Center(
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        direction: Axis.vertical,
+        children: [
+          Text('Something went wrong while loading the data'),
+          Text('${error?.toString()}'),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                loadDataFuture = widget.getDataCallback(0);
+              });
+            },
+            child: Text('Try again'),
+          ),
+        ],
       ),
     );
+  }
+
+  Widget buildTable() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        lastLoadedPackage.onCelltap =
+            (row, cell) => showDetails(context, row, cell);
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints.expand(width: constraints.maxWidth),
+            child: PaginatedDataTable(
+              source: lastLoadedPackage,
+              columns: lastLoadedPackage.getColumns((index, asc) {
+                setState(() {
+                  lastLoadedPackage.sortIndex = index;
+                  lastLoadedPackage.sortAscending = asc;
+                  lastLoadedPackage.sort();
+                });
+              }),
+              onPageChanged: (targetPage) {
+                final nextOffset = targetPage * rowsPerPage;
+                setState(() {
+                  loadDataFuture = widget.getDataCallback(nextOffset);
+                });
+              },
+              onRowsPerPageChanged: (newRowsPerPage) {
+                if (newRowsPerPage != null) {
+                  setState(() {
+                    rowsPerPage = newRowsPerPage;
+                  });
+                }
+              },
+              sortAscending: lastLoadedPackage.sortAscending,
+              sortColumnIndex: lastLoadedPackage.sortIndex,
+              showCheckboxColumn: false,
+              rowsPerPage: min(lastLoadedPackage.rowCount, rowsPerPage),
+              availableRowsPerPage: [
+                min(lastLoadedPackage.rowCount, rowsPerPage),
+                min(lastLoadedPackage.rowCount, rowsPerPage) * 2,
+                min(lastLoadedPackage.rowCount, rowsPerPage) * 3,
+                min(lastLoadedPackage.rowCount, rowsPerPage) * 5
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void showDetails(
+      BuildContext context, Map<String, dynamic> row, String cellKey) {
+    showDialog(
+        context: context,
+        builder: (c) => AlertDialog(
+              title: Text('Cell content'),
+              content: Text(row[cellKey]?.toString() ?? 'Seems to be null'),
+            ));
   }
 }
