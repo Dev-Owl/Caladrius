@@ -2,6 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+/*
+Seems like the paged datatable doesnt support loading pages one by one
+It needs to have all data up front
+*/
+
 class DataPackage extends DataTableSource {
   final int offset;
   final List<Map<String, dynamic>> data;
@@ -109,7 +114,7 @@ class DataPackage extends DataTableSource {
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => totalRows;
+  int get rowCount => totalRows - offset;
 
   @override
   int get selectedRowCount => 0;

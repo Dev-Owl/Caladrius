@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:caladrius/core/dataPackage.dart';
+import 'package:caladrius/main.dart';
 import 'package:flutter/material.dart';
 import 'package:caladrius/core/helper.dart';
 
@@ -20,11 +21,6 @@ class DocumentList extends StatefulWidget {
 }
 
 class _DocumentListState extends State<DocumentList> {
-  /*
-      Load data function
-      Sort data 
-  */
-
   late Future<DataPackage> loadDataFuture;
   late DataPackage lastLoadedPackage;
   int rowsPerPage = 10;
@@ -113,27 +109,27 @@ class _DocumentListState extends State<DocumentList> {
                 });
               }),
               onPageChanged: (targetPage) {
-                final nextOffset = targetPage * rowsPerPage;
                 setState(() {
-                  loadDataFuture = widget.getDataCallback(nextOffset);
+                  loadDataFuture = widget.getDataCallback(targetPage);
                 });
               },
-              onRowsPerPageChanged: (newRowsPerPage) {
+              onRowsPerPageChanged: (newRowsPerPage) async {
                 if (newRowsPerPage != null) {
                   setState(() {
                     rowsPerPage = newRowsPerPage;
                   });
+                  await preferences.setInt('lastpagesize', newRowsPerPage);
                 }
               },
               sortAscending: lastLoadedPackage.sortAscending,
               sortColumnIndex: lastLoadedPackage.sortIndex,
               showCheckboxColumn: false,
-              rowsPerPage: min(lastLoadedPackage.rowCount, rowsPerPage),
+              rowsPerPage: min(lastLoadedPackage.totalRows, rowsPerPage),
               availableRowsPerPage: [
-                min(lastLoadedPackage.rowCount, rowsPerPage),
-                min(lastLoadedPackage.rowCount, rowsPerPage) * 2,
-                min(lastLoadedPackage.rowCount, rowsPerPage) * 3,
-                min(lastLoadedPackage.rowCount, rowsPerPage) * 5
+                min(lastLoadedPackage.totalRows, rowsPerPage),
+                min(lastLoadedPackage.totalRows, rowsPerPage) * 2,
+                min(lastLoadedPackage.totalRows, rowsPerPage) * 3,
+                min(lastLoadedPackage.totalRows, rowsPerPage) * 5
               ],
             ),
           ),

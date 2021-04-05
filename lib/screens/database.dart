@@ -5,6 +5,7 @@ import 'package:caladrius/component/widget/documentList.dart';
 import 'package:caladrius/core/clientHelper.dart';
 import 'package:caladrius/core/dataPackage.dart';
 import 'package:caladrius/core/router.dart';
+import 'package:caladrius/main.dart';
 import 'package:caladrius/pillowdart/client.dart';
 import 'package:flutter/material.dart';
 import 'package:caladrius/core/helper.dart';
@@ -96,15 +97,18 @@ class _DatabaseViewState extends State<DatabaseView> {
       return DocumentList(
         (int offset) async {
           try {
+            final lastPageSize = preferences.getInt('lastpagesize') ?? 10;
             final client = PillowClientHelper.getClient();
             var response = await client.request(
-                '$getCurrentDataBaseName/_all_docs', HttpMethod.GET);
+                '$getCurrentDataBaseName/_all_docs?skip=$offset&limit=$lastPageSize',
+                HttpMethod.GET);
             final data = jsonDecode(response.body);
-            return DataPackage(
+            final package = DataPackage(
               data['total_rows'],
               offset,
               List<Map<String, dynamic>>.from(data['rows']),
             );
+            return package;
           } catch (e) {
             return Future.error(e);
           }
