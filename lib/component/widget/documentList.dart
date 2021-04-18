@@ -1,15 +1,14 @@
 import 'dart:math';
 
+import 'package:advanced_datatable/datatable.dart';
 import 'package:caladrius/core/dataPackage.dart';
 import 'package:caladrius/main.dart';
 import 'package:flutter/material.dart';
 import 'package:caladrius/core/helper.dart';
 
-typedef GetDataCallback = Future<DataPackage> Function(int offset);
-
 class DocumentList extends StatefulWidget {
   final String title;
-  final GetDataCallback getDataCallback;
+  final LoadGenericDataCallBack getDataCallback;
 
   const DocumentList(
     this.getDataCallback, {
@@ -21,15 +20,9 @@ class DocumentList extends StatefulWidget {
 }
 
 class _DocumentListState extends State<DocumentList> {
-  late Future<DataPackage> loadDataFuture;
-  late DataPackage lastLoadedPackage;
+  late final DataPackage lastLoadedPackage =
+      DataPackage(widget.getDataCallback);
   int rowsPerPage = 10;
-
-  @override
-  void initState() {
-    super.initState();
-    loadDataFuture = widget.getDataCallback(0);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,31 +34,7 @@ class _DocumentListState extends State<DocumentList> {
               title: Text(widget.title),
               automaticallyImplyLeading: false,
             ),
-      body: buildContent(context),
-    );
-  }
-
-  Widget buildContent(BuildContext context) {
-    return FutureBuilder<DataPackage>(
-      builder: (fContext, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.data != null) {
-            lastLoadedPackage = snapshot.data!;
-            return buildTable();
-          } else {
-            return errorChild('Got empty response, that should not happen');
-          }
-        } else {
-          if (snapshot.hasError) {
-            return errorChild(snapshot.error);
-          } else {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-        }
-      },
-      future: loadDataFuture,
+      body: buildTable(),
     );
   }
 
@@ -79,9 +48,8 @@ class _DocumentListState extends State<DocumentList> {
           Text('${error?.toString()}'),
           ElevatedButton(
             onPressed: () {
-              setState(() {
-                loadDataFuture = widget.getDataCallback(0);
-              });
+              //TODO would be nice if I can controll the table from the outside
+              setState(() {});
             },
             child: Text('Try again'),
           ),
@@ -96,42 +64,34 @@ class _DocumentListState extends State<DocumentList> {
         lastLoadedPackage.onCelltap =
             (row, cell) => showDetails(context, row, cell);
         return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints.expand(width: constraints.maxWidth),
-            child: PaginatedDataTable(
-              source: lastLoadedPackage,
-              columns: lastLoadedPackage.getColumns((index, asc) {
-                setState(() {
-                  lastLoadedPackage.sortIndex = index;
-                  lastLoadedPackage.sortAscending = asc;
-                  lastLoadedPackage.sort();
-                });
-              }),
-              onPageChanged: (targetPage) {
-                setState(() {
-                  loadDataFuture = widget.getDataCallback(targetPage);
-                });
-              },
-              onRowsPerPageChanged: (newRowsPerPage) async {
-                if (newRowsPerPage != null) {
+          scrollDirection: Axis.vertical,
+          child: AdvancedPaginatedDataTable(
+            source: lastLoadedPackage,
+            columns: [
+              DataColumn(label: Text('id')),
+              DataColumn(
+                label: Text('key'),
+                onSort: (i, s) {
                   setState(() {
-                    rowsPerPage = newRowsPerPage;
+                    lastLoadedPackage.sort(i, s);
                   });
-                  await preferences.setInt('lastpagesize', newRowsPerPage);
-                }
-              },
-              sortAscending: lastLoadedPackage.sortAscending,
-              sortColumnIndex: lastLoadedPackage.sortIndex,
-              showCheckboxColumn: false,
-              rowsPerPage: min(lastLoadedPackage.totalRows, rowsPerPage),
-              availableRowsPerPage: [
-                min(lastLoadedPackage.totalRows, rowsPerPage),
-                min(lastLoadedPackage.totalRows, rowsPerPage) * 2,
-                min(lastLoadedPackage.totalRows, rowsPerPage) * 3,
-                min(lastLoadedPackage.totalRows, rowsPerPage) * 5
-              ],
-            ),
+                },
+              ),
+              DataColumn(label: Text('value')),
+            ],
+            rowsPerPage: rowsPerPage,
+            onRowsPerPageChanged: (newRowsPerPage) async {
+              if (newRowsPerPage != null) {
+                setState(() {
+                  rowsPerPage = newRowsPerPage;
+                });
+                await preferences.setInt('lastpagesize', newRowsPerPage);
+              }
+            },
+            sortAscending: lastLoadedPackage.sortAscending,
+            sortColumnIndex: lastLoadedPackage.sortIndex,
+            showFirstLastButtons: true,
+            addEmptyRows: false,
           ),
         );
       },

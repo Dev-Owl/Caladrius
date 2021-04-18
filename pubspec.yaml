@@ -29,10 +29,10 @@ dependencies:
   http: ^0.13.1
   shared_preferences: ^2.0.5
   universal_html: ^2.0.4
+  advanced_datatable: 
+    git: git://github.com/Dev-Owl/advanced_datatable.git
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
   pedantic: ^1.11.0
 
 # For information on the generic Dart part of this file, see the

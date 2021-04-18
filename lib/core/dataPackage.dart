@@ -1,28 +1,26 @@
 import 'dart:math';
 
+import 'package:advanced_datatable/advancedDataTableSource.dart';
 import 'package:flutter/material.dart';
 
-/*
-Seems like the paged datatable doesnt support loading pages one by one
-It needs to have all data up front
-*/
+typedef LoadGenericDataCallBack
+    = Future<RemoteDataSourceDetails<Map<String, dynamic>>> Function(
+        int pageSize, int offset, bool asc);
 
-class DataPackage extends DataTableSource {
-  final int offset;
-  final List<Map<String, dynamic>> data;
-  int totalRows;
-  int sortIndex = 0;
+class DataPackage extends AdvancedDataTableSource<Map<String, dynamic>> {
+  int sortIndex = 1;
   bool sortAscending = true;
   void Function(Map<String, dynamic>, String)? onCelltap;
-  List<DataColumn>? _cachedColumn;
-  int get currentRows => data.length;
+  final LoadGenericDataCallBack loadDataCallBack;
 
-  DataPackage(this.totalRows, this.offset, this.data) {
-    sort();
-  }
+  DataPackage(this.loadDataCallBack,
+      {this.onCelltap, this.sortAscending = false, this.sortIndex = 1});
 
-  void sort() {
-    data.sort((a, b) {
+  void sort(index, bool asc) {
+    sortIndex = index;
+    sortAscending = asc;
+    notifyListeners();
+    /*  data.sort((a, b) {
       late Map<String, dynamic> element1;
       late Map<String, dynamic> element2;
       final key = a.keys.elementAt(sortIndex);
@@ -45,35 +43,14 @@ class DataPackage extends DataTableSource {
       }
     });
     notifyListeners();
-  }
-
-  List<DataColumn> getColumns(Function(int, bool) onSort) {
-    if (_cachedColumn == null) {
-      //Default implementation for rows based on the first element
-      final firstObject = data.first;
-      _cachedColumn = firstObject.keys.map((e) {
-        final current = firstObject[e];
-        if (current is String || current is num) {
-          return DataColumn(
-            label: Text(e),
-            numeric: current is num,
-            onSort: onSort,
-          );
-        }
-        return DataColumn(
-          label: Text(e),
-        );
-      }).toList();
-      return _cachedColumn!;
-    } else {
-      return _cachedColumn!;
-    }
+    */
   }
 
   @override
   DataRow? getRow(int index) {
-    final currentRow = data[index];
-    return DataRow(
+    final currentRow = lastDetails!.rows[index];
+
+    final row = DataRow(
       cells: currentRow.keys.map((e) {
         final currentCell = currentRow[e];
         if (currentCell is String || currentCell is num) {
@@ -108,14 +85,15 @@ class DataPackage extends DataTableSource {
         }
       }).toList(),
     );
+    return row;
   }
 
   @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get rowCount => totalRows - offset;
-
-  @override
   int get selectedRowCount => 0;
+
+  @override
+  Future<RemoteDataSourceDetails<Map<String, dynamic>>> getNextPage(
+      int pagesize, int offset) async {
+    return loadDataCallBack(pagesize, offset, sortAscending);
+  }
 }

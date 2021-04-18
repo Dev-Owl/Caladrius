@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:advanced_datatable/advancedDataTableSource.dart';
 import 'package:caladrius/component/widget/databaseMenu.dart';
 import 'package:caladrius/component/widget/documentList.dart';
 import 'package:caladrius/core/clientHelper.dart';
@@ -95,30 +96,28 @@ class _DatabaseViewState extends State<DatabaseView> {
   Widget buildBody() {
     if (selectedMenu == 1) {
       return DocumentList(
-        (int offset) async {
-          try {
-            final lastPageSize = preferences.getInt('lastpagesize') ?? 10;
-            final client = PillowClientHelper.getClient();
-            var response = await client.request(
-                '$getCurrentDataBaseName/_all_docs?skip=$offset&limit=$lastPageSize',
-                HttpMethod.GET);
-            final data = jsonDecode(response.body);
-            final package = DataPackage(
-              data['total_rows'],
-              offset,
-              List<Map<String, dynamic>>.from(data['rows']),
-            );
-            return package;
-          } catch (e) {
-            return Future.error(e);
-          }
-        },
+        loadAllDocuments,
         title: getTitle(),
       );
     }
     return Container(
       child: Text('Lazy'),
     );
+  }
+
+  Future<RemoteDataSourceDetails<Map<String, dynamic>>> loadAllDocuments(
+      int pagesize, int offset, bool sortAscending) async {
+    try {
+      final client = PillowClientHelper.getClient();
+      var response = await client.request(
+          '$getCurrentDataBaseName/_all_docs?skip=$offset&limit=$pagesize&descending=${sortAscending.toString().toLowerCase()}',
+          HttpMethod.GET);
+      final data = jsonDecode(response.body);
+      return RemoteDataSourceDetails<Map<String, dynamic>>(
+          data['total_rows'], List<Map<String, dynamic>>.from(data['rows']));
+    } catch (e) {
+      return Future.error(e);
+    }
   }
 
   Widget buildMenu() {
