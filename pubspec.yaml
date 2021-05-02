@@ -23,14 +23,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  advanced_datatable: ^0.0.3+1
   bloc: ^7.0.0
   cupertino_icons: ^1.0.2
   flutter_bloc: ^7.0.0
   http: ^0.13.1
   shared_preferences: ^2.0.5
   universal_html: ^2.0.4
-  advanced_datatable: 
-    git: git://github.com/Dev-Owl/advanced_datatable.git
 
 dev_dependencies:
   pedantic: ^1.11.0

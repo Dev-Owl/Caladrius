@@ -4,12 +4,10 @@ packages:
   advanced_datatable:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "449b4bd588424aa7572c4272b485376efe6ba5bd"
-      url: "git://github.com/Dev-Owl/advanced_datatable.git"
-    source: git
-    version: "0.0.2"
+      name: advanced_datatable
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.3+1"
   async:
     dependency: transitive
     description:

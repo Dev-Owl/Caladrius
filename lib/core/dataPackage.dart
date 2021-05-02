@@ -93,7 +93,8 @@ class DataPackage extends AdvancedDataTableSource<Map<String, dynamic>> {
 
   @override
   Future<RemoteDataSourceDetails<Map<String, dynamic>>> getNextPage(
-      int pagesize, int offset) async {
-    return loadDataCallBack(pagesize, offset, sortAscending);
+      NextPageRequest pageRequest) {
+    // TODO: implement getNextPage
+    throw UnimplementedError();
   }
 }

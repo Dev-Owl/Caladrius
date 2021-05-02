@@ -4,14 +4,16 @@ import 'package:advanced_datatable/advancedDataTableSource.dart';
 import 'package:caladrius/component/widget/databaseMenu.dart';
 import 'package:caladrius/component/widget/documentList.dart';
 import 'package:caladrius/core/clientHelper.dart';
-import 'package:caladrius/core/dataPackage.dart';
 import 'package:caladrius/core/router.dart';
-import 'package:caladrius/main.dart';
 import 'package:caladrius/pillowdart/client.dart';
 import 'package:flutter/material.dart';
 import 'package:caladrius/core/helper.dart';
 
 class DatabaseView extends StatefulWidget {
+  final String? database;
+
+  const DatabaseView({Key? key, this.database}) : super(key: key);
+
   @override
   _DatabaseViewState createState() => _DatabaseViewState();
 }
@@ -25,17 +27,33 @@ class _DatabaseViewState extends State<DatabaseView> {
     super.initState();
   }
 
-  String get getCurrentDataBaseName => routingData.route[1];
+  String? get getCurrentDataBaseName =>
+      routingData.route.length >= 2 ? routingData.route[1] : widget.database;
 
   @override
   Widget build(BuildContext context) {
     routingData = ModalRoute.of(context)!.settings.arguments as RoutingData;
     final mobileMode = widget.renderMobileMode(context);
+    late final Widget body;
+    if (getCurrentDataBaseName == null) {
+      body = Center(
+        child: Text('No database selected'),
+      );
+    } else {
+      body = Center(
+        child: Text('Placeholder for $getCurrentDataBaseName'),
+      );
+    }
+    return Scaffold(
+      body: body,
+    );
 
+    /*
     if (mobileMode) {
       return mobileScreen(context);
     }
     return desktopScreen(context);
+    */
   }
 
   String getTitle() {
@@ -122,7 +140,7 @@ class _DatabaseViewState extends State<DatabaseView> {
 
   Widget buildMenu() {
     return DatabaseMenu(
-      getCurrentDataBaseName,
+      getCurrentDataBaseName!,
       allDocuments: () {
         if (selectedMenu != 1) {
           setState(() {

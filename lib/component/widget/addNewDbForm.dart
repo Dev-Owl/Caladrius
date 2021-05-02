@@ -48,7 +48,6 @@ class _AddNewDBState extends State<AddNewDB> {
             final validationResult = formKey.currentState?.validate() ?? false;
             if (validationResult) {
               final newDbName = dbName.text.toLowerCase();
-              //TODO run put to server to create db and trigger reload
               final creationRequest = await PillowClientHelper.getClient()
                   .request(newDbName, HttpMethod.PUT);
               if (creationRequest.statusCode == 201) {
