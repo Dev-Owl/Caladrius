@@ -1,14 +1,17 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:advanced_datatable/advancedDataTableSource.dart';
 import 'package:caladrius/component/listtile/databaseListTile.dart';
 import 'package:caladrius/component/widget/databaseMenu.dart';
 import 'package:caladrius/component/widget/documentList.dart';
+import 'package:caladrius/component/widget/emptyWidget.dart';
 import 'package:caladrius/core/clientHelper.dart';
 import 'package:caladrius/core/router.dart';
 import 'package:caladrius/pillowdart/client.dart';
 import 'package:flutter/material.dart';
 import 'package:caladrius/core/helper.dart';
+import 'package:ionicons/ionicons.dart';
 
 class DatabaseView extends StatefulWidget {
   final String? database;
@@ -22,6 +25,18 @@ class DatabaseView extends StatefulWidget {
 class _DatabaseViewState extends State<DatabaseView> {
   late RoutingData routingData;
   var selectedMenu = 1;
+  final List<IconData> emptyIcon = [
+    Ionicons.bug,
+    Ionicons.beer,
+    Ionicons.balloon,
+    Ionicons.bonfire,
+    Ionicons.apps_outline,
+    Ionicons.color_wand,
+    Ionicons.diamond,
+    Ionicons.construct,
+    Ionicons.fish,
+  ];
+  final rnd = Random();
 
   @override
   void initState() {
@@ -37,10 +52,12 @@ class _DatabaseViewState extends State<DatabaseView> {
     final mobileMode = widget.renderMobileMode(context);
     late final Widget body;
     if (getCurrentDataBaseName == null) {
-      
       //TODO Add a proper empty widget here
       body = Center(
-        child: Text('No database selected, please select or create one'),
+        child: EmptyWidget(
+          'Select a database',
+          icon: emptyIcon[rnd.nextInt(emptyIcon.length)],
+        ),
       );
     } else {
       body = DatabaseListTile(getCurrentDataBaseName!);
