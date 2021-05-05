@@ -4,11 +4,13 @@ class EmptyWidget extends StatelessWidget {
   final String title;
   final String? subTitle;
   final IconData? icon;
-  final String? assetImage;
 
-  const EmptyWidget(this.title,
-      {Key? key, this.subTitle, this.icon, this.assetImage})
-      : super(key: key);
+  const EmptyWidget(
+    this.title, {
+    Key? key,
+    this.subTitle,
+    this.icon,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +21,9 @@ class EmptyWidget extends StatelessWidget {
         icon,
         size: size.width * 0.1,
       );
-    } else if (assetImage != null) {
-    } else {}
+    } else {
+      child = Container();
+    }
 
     return buildContainter(context, child);
   }
