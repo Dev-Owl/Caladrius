@@ -79,24 +79,34 @@ class _DatabaseListTileState extends State<DatabaseListTile> {
       return Future.error(e);
     }
   }
-
+  //TODO Design overview card and move it out of listtiles 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(widget.databaseName),
-      subtitle: FutureBuilder<Widget>(
-        initialData: Text('Loading database information...'),
-        builder: (c, snapshot) {
-          if (snapshot.hasError) {
-            return Text('Error loading database stats');
-          } else if (snapshot.hasData) {
-            return snapshot.data!;
-          }
-          return CircularProgressIndicator();
-        },
-        future: loadDatabaseInformation(),
+    return Card(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            title: Text(widget.databaseName),
+          ),
+          ListTile(
+            title: Text(widget.databaseName),
+            subtitle: FutureBuilder<Widget>(
+              initialData: Text('Loading database information...'),
+              builder: (c, snapshot) {
+                if (snapshot.hasError) {
+                  return Text('Error loading database stats');
+                } else if (snapshot.hasData) {
+                  return snapshot.data!;
+                }
+                return CircularProgressIndicator();
+              },
+              future: loadDatabaseInformation(),
+            ),
+            onTap: widget.onTap,
+          ),
+        ],
       ),
-      onTap: widget.onTap,
     );
   }
 }

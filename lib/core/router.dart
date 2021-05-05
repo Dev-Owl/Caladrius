@@ -3,7 +3,12 @@ import 'package:caladrius/screens/corsHelp.dart';
 import 'package:caladrius/screens/dashboard.dart';
 import 'package:caladrius/component/bootstrap/CaladriusBootstrap.dart';
 import 'package:caladrius/screens/database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:universal_html/controller.dart';
+import 'httpUrlHandler/httpUrlHandler_stub.dart'
+    if (dart.library.io) 'httpUrlHandler/httpUrlHandler_app.dart'
+    if (dart.library.html) 'httpUrlHandler/httpUrlHandler_web.dart';
 
 class AppRouter {
   //Create a root that ensures a login/session
@@ -57,6 +62,18 @@ class AppRouter {
   static PageRoute _default(RoutingData data) {
     return bootstrapRoute(() => Dashboard(), data);
   }
+
+  static void updateUrl(String newURL,{bool pushToHistory=true}){
+    if(kIsWeb){
+       final window = getWindow();
+       if(pushToHistory){
+         window.history.pushState(null, 'title', newURL);
+       }
+       //window.location.hash =newURL;
+    }
+  }
+  static String getCurrentURL() => kIsWeb ? getWindow().location.href : '';
+
 }
 
 class RoutingData {

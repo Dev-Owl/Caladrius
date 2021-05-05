@@ -1,4 +1,6 @@
 import 'package:caladrius/component/sharedDialogs.dart';
+import 'package:caladrius/component/widget/databaseGridElement.dart';
+import 'package:caladrius/core/router.dart';
 import 'package:flutter/material.dart';
 
 typedef OnDatabaseTab = void Function(String databaseName);
@@ -68,7 +70,7 @@ class _DatabaseGridListState extends State<DatabaseGridList> {
                       border: OutlineInputBorder(
                           borderSide:
                               BorderSide(color: Colors.blueAccent, width: 32.0),
-                          borderRadius: BorderRadius.circular(25.0)),
+                          borderRadius: BorderRadius.circular(15.0)),
                     ),
                     onSubmitted: (term) {
                       setState(() {});
@@ -88,26 +90,10 @@ class _DatabaseGridListState extends State<DatabaseGridList> {
                   mainAxisSpacing: 20),
               itemCount: viewData.length,
               itemBuilder: (_, index) {
-                return GestureDetector(
-                  onTap: () {
-                    final newSelectedDb = viewData[index];
-                    setState(() {
-                      selectedDatabase = newSelectedDb;
-                    });
-                    widget.dbTap(newSelectedDb);
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    padding: EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                        color: selectedDatabase == viewData[index]
-                            ? Colors.amber[800]
-                            : Colors.amberAccent,
-                        borderRadius: BorderRadius.circular(15)),
-                    child: Text(
-                      viewData[index],
-                    ),
-                  ),
+                return DatabaseGridElement(
+                  viewData[index],
+                  databaseSelected,
+                  selectedDatabase == viewData[index],
                 );
               },
             ),
@@ -115,5 +101,13 @@ class _DatabaseGridListState extends State<DatabaseGridList> {
         ],
       ),
     );
+  }
+
+  void databaseSelected(String newDatabaseSelected) {
+    setState(() {
+      selectedDatabase = newDatabaseSelected;
+    });
+    AppRouter.updateUrl(AppRouter.getCurrentURL() + '/openDatabase/$newDatabaseSelected');
+    widget.dbTap(newDatabaseSelected);
   }
 }

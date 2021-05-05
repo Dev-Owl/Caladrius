@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:advanced_datatable/advancedDataTableSource.dart';
+import 'package:caladrius/component/listtile/databaseListTile.dart';
 import 'package:caladrius/component/widget/databaseMenu.dart';
 import 'package:caladrius/component/widget/documentList.dart';
 import 'package:caladrius/core/clientHelper.dart';
@@ -36,13 +37,13 @@ class _DatabaseViewState extends State<DatabaseView> {
     final mobileMode = widget.renderMobileMode(context);
     late final Widget body;
     if (getCurrentDataBaseName == null) {
+      
+      //TODO Add a proper empty widget here
       body = Center(
-        child: Text('No database selected'),
+        child: Text('No database selected, please select or create one'),
       );
     } else {
-      body = Center(
-        child: Text('Placeholder for $getCurrentDataBaseName'),
-      );
+      body = DatabaseListTile(getCurrentDataBaseName!);
     }
     return Scaffold(
       body: body,
